@@ -27,6 +27,7 @@ def upload_model_to_s3(model, bucket_name, model_key):
     with open(model_local_path, 'rb') as model_file:
         s3_client.upload_fileobj(model_file, bucket_name, model_key)
     
+    
     print(f"Model uploaded to s3://{bucket_name}/{model_key}")
 
 def train():
