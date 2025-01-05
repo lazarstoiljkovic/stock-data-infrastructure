@@ -32,6 +32,7 @@ def handler(event, context):
 
     body = json.loads(event['body'])
     
+    data_set = body.get('data_set', 'training')
     multiplier = body.get('multiplier', 1)
     timespan = body.get('timespan', 'day')
     from_date = body.get('from', '2024-08-01')
@@ -73,7 +74,7 @@ def handler(event, context):
 
     df = df.dropna(subset=['sma_14', 'ema_14', 'rsi', 'volatility'])
 
-    original_file_name = f'training/raw/stock_data_{stock_symbol}_{datetime.utcnow().strftime("%Y-%m-%d")}_{uuid.uuid4()}.json'
+    original_file_name = f'{data_set}/raw/stock_data_{stock_symbol}_{datetime.utcnow().strftime("%Y-%m-%d")}_{uuid.uuid4()}.json'
     s3.put_object(
         Bucket=s3_bucket,
         Key=original_file_name,
@@ -100,7 +101,7 @@ def handler(event, context):
             result.get('volatility')
         ])
 
-    processed_file_name = f'training/processed/stock_data_{stock_symbol}_{datetime.utcnow().strftime("%Y-%m-%d")}_{uuid.uuid4()}.csv'
+    processed_file_name = f'{data_set}/processed/stock_data_{stock_symbol}_{datetime.utcnow().strftime("%Y-%m-%d")}_{uuid.uuid4()}.csv'
     s3.put_object(
         Bucket=s3_bucket,
         Key=processed_file_name,
@@ -123,7 +124,7 @@ def handler(event, context):
     return {
         'statusCode': 200,
         'body': json.dumps({
-            'message': 'Podaci uspešno sačuvani.',
+            'message': f'Podaci uspešno sačuvani u {data_set} skupu.',
             'original_file_url': original_file_url,
             'processed_file_url': processed_file_url
         })
