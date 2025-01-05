@@ -3,7 +3,9 @@ import argparse
 import boto3
 import pandas as pd
 import io
-from sklearn.linear_model import LinearRegression
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import GRU, Dense
+import numpy as np
 import joblib
 
 def load_csv_from_s3(bucket_name, file_key):
@@ -19,7 +21,7 @@ def upload_model_to_s3(model, bucket_name, model_key):
     s3_client = boto3.client('s3')
     
     # Save the model to a local file
-    model_local_path = '/tmp/linear_regression_model.joblib'
+    model_local_path = '/tmp/gru_model.joblib'
     joblib.dump(model, model_local_path)
     
     # Upload the model to S3
@@ -29,23 +31,28 @@ def upload_model_to_s3(model, bucket_name, model_key):
     
     print(f"Model uploaded to s3://{bucket_name}/{model_key}")
 
-def train():
-    file_key = os.getenv('FILE_KEY')
-    bucket_name = os.getenv('BUCKET_NAME')
-
-    # Load the dataset from S3
-    data = load_csv_from_s3(bucket_name, file_key)
+def train(data):
+    # Priprema podataka
+    X = data[['open', 'high', 'low', 'volume', 'sma_14', 'ema_14', 'rsi', 'volatility']].values
+    y = data['close'].values
     
-    # Feature selection and target variable
-    X = data[['open', 'high', 'low', 'volume', 'sma_14', 'ema_14', 'rsi', 'volatility']]
-    y = data['close']
-
-    # Create and train the linear regression model
-    model = LinearRegression()
-    model.fit(X_train, y_train)
-
+    # Pretvaranje podataka u sekvencijalni oblik
+    X = np.array([X[i:i+60] for i in range(len(X)-60)])  # 60 minuta unazad
+    y = y[60:]
+    
+    # Definisanje GRU modela
+    model = Sequential([
+        GRU(50, return_sequences=True, input_shape=(X.shape[1], X.shape[2])),
+        GRU(50),
+        Dense(1)
+    ])
+    model.compile(optimizer='adam', loss='mse')
+    
+    # Treniranje modela
+    model.fit(X, y, epochs=10, batch_size=32)
+    
     # Define the S3 key for the model
-    model_key = 'training/models/linear_regression_model.joblib'
+    model_key = 'training/models/gru_model.joblib'
     
     # Upload the trained model to S3
     upload_model_to_s3(model, bucket_name, model_key)

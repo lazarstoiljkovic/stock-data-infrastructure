@@ -60,7 +60,7 @@ def save_predictions_to_s3(bucket_name, dates, predictions, key_prefix='predicti
     predictions_df.to_csv(csv_buffer, index=False)
     
     # Generiši jedinstveno ime fajla
-    file_key = f"{key_prefix}predictions_{uuid.uuid4()}.csv"
+    file_key = f"{key_prefix}{uuid.uuid4()}.csv"
     
     # Snimi fajl u S3
     s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=csv_buffer.getvalue())
@@ -82,7 +82,7 @@ def save_actuals_to_s3(bucket_name, dates, closes, key_prefix='actuals/'):
     actuals_df.to_csv(csv_buffer, index=False)
     
     # Generiši jedinstveno ime fajla
-    file_key = f"{key_prefix}actuals_{uuid.uuid4()}.csv"
+    file_key = f"{key_prefix}{uuid.uuid4()}.csv"
     
     # Snimi fajl u S3
     s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=csv_buffer.getvalue())
@@ -94,7 +94,6 @@ def save_actuals_to_s3(bucket_name, dates, closes, key_prefix='actuals/'):
 def handler(event, context):
     # S3 parametri (menjaj prema potrebi)
     bucket_name = os.getenv('BUCKET_NAME')
-    model_key = 'models/linear_regression_model.joblib'
 
     # Preuzmi i učitaj model
     model_path = download_model_from_s3(bucket_name, model_key)
@@ -110,6 +109,7 @@ def handler(event, context):
         }
 
     test_data_key = input_data.get('test_data_key')
+    model_key = input_data.get('model_key', 'models/linear_regression_model.joblib')
 
     # Preuzmi test skup
     try:

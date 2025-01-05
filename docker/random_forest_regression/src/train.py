@@ -3,7 +3,7 @@ import argparse
 import boto3
 import pandas as pd
 import io
-from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
 import joblib
 
 def load_csv_from_s3(bucket_name, file_key):
@@ -19,7 +19,7 @@ def upload_model_to_s3(model, bucket_name, model_key):
     s3_client = boto3.client('s3')
     
     # Save the model to a local file
-    model_local_path = '/tmp/linear_regression_model.joblib'
+    model_local_path = '/tmp/random_forest_model.joblib'
     joblib.dump(model, model_local_path)
     
     # Upload the model to S3
@@ -40,12 +40,12 @@ def train():
     X = data[['open', 'high', 'low', 'volume', 'sma_14', 'ema_14', 'rsi', 'volatility']]
     y = data['close']
 
-    # Create and train the linear regression model
-    model = LinearRegression()
-    model.fit(X_train, y_train)
+    # Create and train the random forest regression model
+    model = RandomForestRegressor(n_estimators=100, max_depth=10, random_state=42)
+    model.fit(X, y)
 
     # Define the S3 key for the model
-    model_key = 'training/models/linear_regression_model.joblib'
+    model_key = 'training/models/random_forest_model.joblib'
     
     # Upload the trained model to S3
     upload_model_to_s3(model, bucket_name, model_key)

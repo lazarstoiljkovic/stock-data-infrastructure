@@ -84,7 +84,11 @@ export class StockDataCdkStack extends cdk.Stack {
         code: lambda.DockerImageCode.fromImageAsset("lambda/sagemaker_training"),
         environment: {
           SAGEMAKER_ROLE_ARN: sagemakerRole.roleArn,
-          SAGEMAKER_IMAGE_URI: '607282882839.dkr.ecr.us-east-1.amazonaws.com/linear-regression-model-repo:latest',
+          LINEAR_REGRESSION_SAGEMAKER_IMAGE_URI: '607282882839.dkr.ecr.us-east-1.amazonaws.com/linear-regression-model-repo:latest',
+          DECISION_TREE_REGRESSION_SAGEMAKER_IMAGE_URI: '607282882839.dkr.ecr.us-east-1.amazonaws.com/decision-tree-regression-model-repo:latest',
+          RANDOM_FOREST_REGRESSION_SAGEMAKER_IMAGE_URI: '607282882839.dkr.ecr.us-east-1.amazonaws.com/random-forest-regression-model-repo:latest',
+          LSTM_SAGEMAKER_IMAGE_URI: '607282882839.dkr.ecr.us-east-1.amazonaws.com/lstm-model-repo:latest',
+          GRU_SAGEMAKER_IMAGE_URI: '607282882839.dkr.ecr.us-east-1.amazonaws.com/gru-model-repo:latest'
         },
         memorySize: lambdasMemory,
         logRetention: RetentionDays.ONE_WEEK,
